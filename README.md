@@ -12,9 +12,10 @@ DONE
    * MongoDB for unstructured or flexible data (e.g., order logs, tracking metadata).
 2. Models: Store, Product, Customer, Inventory, Review, and other Order related models.
    Use JPA annotations, field constraints and relationships.
+3. Repositories and Services to handle the business logic / CRUD operations and backend processing.
 
 TODO
-3. Repositories and Services to handle the business logic / CRUD operations and backend processing.
+
 4. REST Controllers for the endpoints: creating store, list products, update inventory, and retrieve order details.
 5. Load sample data: write SQL and MongoDB scripts to populate the database with initial sample data.
 6. Stored procedures for common queries (e.g., checking stock availability across stores).
