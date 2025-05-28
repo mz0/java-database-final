@@ -1,0 +1,55 @@
+# Create and start:
+#   docker compose up -d
+
+# View running:
+#   docker ps
+# View running and stopped:
+#   docker ps --all
+# Start the stopped container (e.g. after host reboot):
+#   docker start mysql8
+
+# Stop:
+#   docker compose down
+# Wipe volume:
+#   docker volume rm mysql8data
+
+services:
+  mysql8:
+    image: mysql:8.4-oraclelinux9
+    container_name: mysql8
+    volumes:
+      - mysql8data:/var/lib/mysql
+    networks:
+      - sTest
+    hostname: mysql8
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_HOST_NAME: mysql8
+      MYSQL_DATABASE: 'ushat'
+      MYSQL_ROOT_PASSWORD: '999'
+      MYSQL_USER: 'shsha'
+      MYSQL_PASSWORD: '999'
+
+  mongodb:
+    image: mongo:8.0.8-noble
+    container_name: mongo
+    volumes:
+      - mongo8data:/data/db
+    networks:
+      - sTest
+    hostname: mongo
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 'simple-1'
+      MONGO_INITDB_DATABASE: test
+
+networks:
+  sTest:
+    name: d-net1
+    driver: bridge
+volumes:
+  mysql8data:
+  mongo8data:
