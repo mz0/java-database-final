@@ -1,73 +1,87 @@
 package com.project.code.Controller;
 
+import com.project.code.Model.Product;
+import com.project.code.Repo.InventoryRepository;
+import com.project.code.Repo.ProductRepository;
+import com.project.code.Service.ServiceClass;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController @RequestMapping("/product")
 public class ProductController {
-// 1. Set Up the Controller Class:
-//    - Annotate the class with `@RestController` to designate it as a REST controller for handling HTTP requests.
-//    - Map the class to the `/product` URL using `@RequestMapping("/product")`.
+    @Autowired private InventoryRepository inventoryRepository;
+    @Autowired private ProductRepository productRepository;
+    @Autowired private ServiceClass serviceClass;
 
+    @PostMapping
+    public Map<String, String> addProduct(@RequestBody Product product) {
+        String result;
+        try {
+            if (!serviceClass.validateProduct(product)) {
+                result = String.format("Product '%s' not found", product.getName());
+            } else {
+                productRepository.save(product);
+                result = "Product saved";
+            }
+        } catch (Exception e) {
+            result = String.format("%s: %s", e.getClass().getName(), e.getMessage());
+        }
+        return Map.of("message", result);
+    }
 
-// 2. Autowired Dependencies:
-//    - Inject the following dependencies via `@Autowired`:
-//        - `ProductRepository` for CRUD operations on products.
-//        - `ServiceClass` for product validation and business logic.
-//        - `InventoryRepository` for managing the inventory linked to products.
+    @GetMapping("/product/{id}")
+    public Map<String, Object> getProductbyId(@PathVariable Long id) {
+        return Map.of("products", productRepository.findById(id).orElse(null));
+    }
 
+    @PutMapping
+    public Map<String, String> updateProduct(@RequestBody Product product) {
+        productRepository.save(product);
+        return Map.of("message", "Product updated");
+    }
 
-// 3. Define the `addProduct` Method:
-//    - Annotate with `@PostMapping` to handle POST requests for adding a new product.
-//    - Accept `Product` object in the request body.
-//    - Validate product existence using `validateProduct()` in `ServiceClass`.
-//    - Save the valid product using `save()` method of `ProductRepository`.
-//    - Catch exceptions (e.g., `DataIntegrityViolationException`) and return appropriate error message.
+    @GetMapping("/category/{name}/{category}")
+    public Map<String, Object> filterbyCategoryProduct(@PathVariable String name, @PathVariable String category) {
+        List<Product> products;
+        if ((category == null || category.isEmpty()) && name != null) {
+            products = productRepository.findProductBySubName(name);
+        } else if (category != null && name == null) {
+            products = productRepository.findByCategory(category);
+        } else {
+            products = productRepository.findProductBySubNameAndCategory(name, category);
+        }
+        return Map.of("products", products);
+    }
 
+    @GetMapping
+    public Map<String, Object> listProduct() {
+        return Map.of("products", productRepository.findAll());
+    }
 
-// 4. Define the `getProductbyId` Method:
-//    - Annotate with `@GetMapping("/product/{id}")` to handle GET requests for retrieving a product by ID.
-//    - Accept product ID via `@PathVariable`.
-//    - Use `findById(id)` method from `ProductRepository` to fetch the product.
-//    - Return the product in a `Map<String, Object>` with key `products`.
+    @GetMapping("filter/{category}/{storeId}")
+    public Map<String, Object> getProductbyCategoryAndStoreId(
+            @PathVariable String category, @PathVariable Long storeId) {
+        return Map.of("product", productRepository.findProductsByCategory(storeId, category));
+    }
 
+    @DeleteMapping("/{id}")
+    public Map<String, String> deleteProduct(@PathVariable Long id) {
+        String result;
+        if (serviceClass.ValidateProductId(id)) {
+            inventoryRepository.deleteByProductId(id);
+            productRepository.deleteById(id);
+            result = "Product deleted";
+        } else {
+            result = String.format("Product '%d' not found", id);
+        }
+        return Map.of("message", result);
+    }
 
- // 5. Define the `updateProduct` Method:
-//    - Annotate with `@PutMapping` to handle PUT requests for updating an existing product.
-//    - Accept updated `Product` object in the request body.
-//    - Use `save()` method from `ProductRepository` to update the product.
-//    - Return a success message with key `message` after updating the product.
-
-
-// 6. Define the `filterbyCategoryProduct` Method:
-//    - Annotate with `@GetMapping("/category/{name}/{category}")` to handle GET requests for filtering products by `name` and `category`.
-//    - Use conditional filtering logic if `name` or `category` is `"null"`.
-//    - Fetch products based on category using methods like `findByCategory()` or `findProductBySubNameAndCategory()`.
-//    - Return filtered products in a `Map<String, Object>` with key `products`.
-
-
- // 7. Define the `listProduct` Method:
-//    - Annotate with `@GetMapping` to handle GET requests to fetch all products.
-//    - Fetch all products using `findAll()` method from `ProductRepository`.
-//    - Return all products in a `Map<String, Object>` with key `products`.
-
-
-// 8. Define the `getProductbyCategoryAndStoreId` Method:
-//    - Annotate with `@GetMapping("filter/{category}/{storeid}")` to filter products by `category` and `storeId`.
-//    - Use `findProductByCategory()` method from `ProductRepository` to retrieve products.
-//    - Return filtered products in a `Map<String, Object>` with key `product`.
-
-
-// 9. Define the `deleteProduct` Method:
-//    - Annotate with `@DeleteMapping("/{id}")` to handle DELETE requests for removing a product by its ID.
-//    - Validate product existence using `ValidateProductId()` in `ServiceClass`.
-//    - Remove product from `Inventory` first using `deleteByProductId(id)` in `InventoryRepository`.
-//    - Remove product from `Product` using `deleteById(id)` in `ProductRepository`.
-//    - Return a success message with key `message` indicating product deletion.
-
-
- // 10. Define the `searchProduct` Method:
-//    - Annotate with `@GetMapping("/searchProduct/{name}")` to search for products by `name`.
-//    - Use `findProductBySubName()` method from `ProductRepository` to search products by name.
-//    - Return search results in a `Map<String, Object>` with key `products`.
-
-
-  
-    
+    @GetMapping("/searchProduct/{name}")
+    public Map<String, Object> searchProduct(@PathVariable String name) {
+        return Map.of("products", productRepository.findProductBySubName(name));
+    }
 }
