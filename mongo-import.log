@@ -1,0 +1,26 @@
+$ docker compose up -d
+
+[+] Running 5/5
+ ✔ Network d-net1          Created                                                                                                                                                                                                                                                                                                                                    0.0s 
+ ✔ Volume "p2_mongo8data"  Created                                                                                                                                                                                                                                                                                                                                    0.0s 
+ ✔ Volume "p2_mysql8data"  Created                                                                                                                                                                                                                                                                                                                                    0.0s 
+ ✔ Container mysql8        Started                                                                                                                                                                                                                                                                                                                                    0.2s 
+ ✔ Container mongo         Started                                                                                                                                                                                                                                                                                                                                    0.2s 
+
+~/p/interview/java-database-final$ docker exec -it mongo /bin/bash
+
+root@mongo:/# head -2 /docker-entrypoint-initdb.d/reviews.json
+{ "productId": 1, "customerId": 45, "storeId": 1, "rating": 5, "comment": "Amazing laptop! Very fast and lightweight." }
+{ "productId": 1, "customerId": 15, "storeId": 1, "rating": 4, "comment": "Great product! Worth every penny." }
+
+root@mongo:/# mongoimport --host localhost \
+            --port 27017 \
+            -u "$MONGO_INITDB_ROOT_USERNAME" \
+            -p "$MONGO_INITDB_ROOT_PASSWORD" \
+            --authenticationDatabase admin \
+            --db "$MONGO_INITDB_DATABASE" \
+            --collection reviews \
+            --file /docker-entrypoint-initdb.d/reviews.json
+
+2025-05-29T21:20:18.166+0000	connected to: mongodb://localhost:27017/
+2025-05-29T21:20:18.182+0000	250 document(s) imported successfully. 0 document(s) failed to import.

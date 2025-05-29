@@ -8,11 +8,18 @@
 # Start the stopped container (e.g. after host reboot):
 #   docker start mysql8
 
-# Stop:
-#   docker compose down
-# Wipe volume:
-#   docker volume rm mysql8data
+# https://docs.docker.com/reference/cli/docker/compose/logs/
+# View logs per container Or service
+#   docker logs mysql8
+#   docker logs mongo
+# Or
+#   docker compose logs mongodb
 
+# Stop:
+#   docker compose down -v
+# Wipe volume (in case you forgot -v):
+#   docker volume rm mysql8data
+name: p2
 services:
   mysql8:
     image: mysql:8.4-oraclelinux9
@@ -26,7 +33,7 @@ services:
       - 3306:3306
     environment:
       MYSQL_HOST_NAME: mysql8
-      MYSQL_DATABASE: 'ushat'
+      MYSQL_DATABASE: 'inventory'
       MYSQL_ROOT_PASSWORD: '999'
       MYSQL_USER: 'shsha'
       MYSQL_PASSWORD: '999'
@@ -36,6 +43,8 @@ services:
     container_name: mongo
     volumes:
       - mongo8data:/data/db
+      # import once on DB init
+      - ./reviews-lines.json:/docker-entrypoint-initdb.d/reviews.json
     networks:
       - sTest
     hostname: mongo
@@ -44,7 +53,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: 'simple-1'
-      MONGO_INITDB_DATABASE: test
+      MONGO_INITDB_DATABASE: reviews
 
 networks:
   sTest:
