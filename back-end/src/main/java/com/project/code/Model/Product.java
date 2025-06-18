@@ -16,7 +16,7 @@ public class Product {
     @NotNull private Double price;
     @NotNull private String sku;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference("inventory-product") // to manage bidirectional relationships and avoid circular references
     private List<Inventory> inventoryEntries;
 
